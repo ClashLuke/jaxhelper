@@ -12,7 +12,7 @@ setuptools.setup(
     description='Basic tools and helpers for Jax',
     version='0.0.1',
     long_description=README,
-    url='https://github.com/clashluke/namedtreemap',
+    url='https://github.com/clashluke/jaxhelper',
     packages=setuptools.find_packages(),
     python_requires=">=3.7",
     long_description_content_type="text/markdown",
