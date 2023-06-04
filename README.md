@@ -1,6 +1,6 @@
 # JaxHelper
 
-/home/lucas/PycharmProjects/jaxtools/setup.py
+Basic tools and helpers for Jax
 
 ## Getting Started
 
