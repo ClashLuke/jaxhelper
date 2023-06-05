@@ -97,25 +97,28 @@ def dot(x, w):
     return lax.dot_general(x, w, (((x.ndim - 1,), (0,)), ((), ())), precision="fastest")
 
 
-@jax.custom_gradient
 def softmax(q: jax.Array, k: jax.Array, ctx_dims: str, scale: float) -> jax.Array:
-    lgt = jnp.einsum(f"bshf,{ctx_dims}->bhsz", q, k, precision="fastest")
-    lgt = lgt.astype(jnp.float32)
-    lgt *= scale
-    lgt = jnp.exp(lgt - lgt.max(-1, keepdims=True))
-    lgt /= lgt.sum(-1, keepdims=True)
-    lgt = lgt.astype(q.dtype)
+    @jax.custom_gradient
+    def _fn(q: jax.Array, k: jax.Array) -> jax.Array:
+        lgt = jnp.einsum(f"bshf,{ctx_dims}->bhsz", q, k, precision="fastest")
+        lgt = lgt.astype(jnp.float32)
+        lgt *= scale
+        lgt = jnp.exp(lgt - lgt.max(-1, keepdims=True))
+        lgt /= lgt.sum(-1, keepdims=True)
+        lgt = lgt.astype(q.dtype)
 
-    def _grad(dy):
-        inner_lgt = lgt.astype(jnp.float32)
-        prod = inner_lgt * dy.astype(jnp.float32)
-        dlgt = prod - prod.sum(-1, keepdims=True) * inner_lgt
-        dlgt *= scale
-        dlgt = dlgt.astype(q.dtype)
-        return (jnp.einsum(f"bhsz,{ctx_dims}->bshf", dlgt, k, precision="fastest"),
-                jnp.einsum(f"bhsz,bshf->{ctx_dims}", dlgt, q, precision="fastest"))
+        def _grad(dy):
+            inner_lgt = lgt.astype(jnp.float32)
+            prod = inner_lgt * dy.astype(jnp.float32)
+            dlgt = prod - prod.sum(-1, keepdims=True) * inner_lgt
+            dlgt *= scale
+            dlgt = dlgt.astype(q.dtype)
+            return (jnp.einsum(f"bhsz,{ctx_dims}->bshf", dlgt, k, precision="fastest"),
+                    jnp.einsum(f"bhsz,bshf->{ctx_dims}", dlgt, q, precision="fastest"))
 
-    return lgt, _grad
+        return lgt, _grad
+
+    return _fn(q, k)
 
 
 def to_host(k, index_fn: Callable[[jax.Array], jax.Array] = index(0)):
