@@ -10,7 +10,7 @@ setuptools.setup(
     name='jaxhelper',
     license='BSD',
     description='Basic tools and helpers for Jax',
-    version='0.0.4',
+    version='0.0.5',
     long_description=README,
     url='https://github.com/clashluke/jaxhelper',
     packages=setuptools.find_packages(),

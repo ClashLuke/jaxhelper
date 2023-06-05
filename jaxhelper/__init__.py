@@ -151,7 +151,7 @@ def attention(hidden_states, context, qk, kk, vk, pk, pb, scale: float, heads: i
     def _fn(h, c, qk, kk, vk, pk, pb):
 
         q, k, v = [x.reshape(*x.shape[:-1], heads, -1).astype(jnp.bfloat16)  #
-                   for x in multi_dot((h, qk), (c, vk), (c, kk))]
+                   for x in dot_fn((h, qk), (c, vk), (c, kk))]
 
         def _attn(carry: jax.Array, idx: jax.Array) -> Tuple[jax.Array, None]:
             lq = lax.dynamic_slice_in_dim(q, idx * chunk, chunk, q.ndim - 3)
