@@ -1,4 +1,5 @@
 import contextlib
+import typing
 from typing import Callable, Tuple
 
 import jax
@@ -81,7 +82,9 @@ def tree_dtype(tree):
 
 
 @map_fn
-def index(x, index):
+def index(x, index: typing.Optional[int] = None):
+    if index is None:
+        return map_fn(lambda k: k[x])  # x is index, we simply curried
     return x[index]
 
 
