@@ -37,7 +37,7 @@ def identity(*args, **kwargs):
 def if_flag(flag: str, baseline=identity):
     def _outer(fn):
         def _fn(*args, **kwargs):
-            if not _GLOBAL_FLAGS[flag]:
+            if not _GLOBAL_FLAGS.get(flag, False):
                 return baseline(*args, **kwargs)
             return fn(*args, **kwargs)
 
